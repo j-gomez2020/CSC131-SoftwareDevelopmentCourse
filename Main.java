@@ -93,7 +93,9 @@ class VendingMachine {
     }
 
     //stack an item into the slot      
-    void stackItem (Item item, int row, int collumn) {
+    void stackItem (Item item, String slot_code) {
+        int row = getRowNumber(slot_code);
+        int collumn = getCollumnNumber(slot_code);
         Item current_head = slots[row][collumn];
         item.setNext(current_head);
         current_head.setIsHead(false);
