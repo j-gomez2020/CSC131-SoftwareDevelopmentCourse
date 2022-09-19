@@ -20,7 +20,7 @@ class VendingMachine {
                                                 //returns the first item in the slot
                                                 //will return null if there is no item in that slot
 
-    void stackItem (Item item, int row, int collumn) {    } //takes an Item, and slot code as input (EX: slot_code = A13)
+    void stackItem (Item item, String slot_code) {    } //takes an Item, and slot code as input (EX: slot_code = A13)
                                                             //stacks an Item into the linked list at the front
                                                             //first in first out
 
