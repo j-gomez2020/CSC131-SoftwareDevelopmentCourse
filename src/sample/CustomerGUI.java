@@ -16,7 +16,6 @@ public class CustomerGUI extends Application {
     Pane pane;
     private static final int xRes = 720;
     private static final int yRes = 1080;
-    private static final javafx.scene.paint.Color color = javafx.scene.paint.Color.rgb(214, 255, 254);
     private static final String backgroundColor = "-fx-background-color: #EFEFEF";
     private static final String btnColor = "-fx-background-color: #D2E5FF";
     private static final String btnColorOnMouseEntered = "-fx-background-color: #EFF6FF";
@@ -32,7 +31,7 @@ public class CustomerGUI extends Application {
     private Button[][] cashBtns;
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         pane = new Pane();
         pane.setStyle(backgroundColor);
 
