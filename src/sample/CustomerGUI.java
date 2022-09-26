@@ -27,6 +27,7 @@ public class CustomerGUI extends Application {
     private int[][] prices;
     private Label[][] priceLabels;
     private Label priceDisplay;
+    private int priceDisplayInt;
     private final HashMap<Button, Integer[]> btnIndex= new HashMap<>();
     private Button[][] cashBtns;
 
@@ -88,7 +89,13 @@ public class CustomerGUI extends Application {
                         lastPressed.setStyle(btnColor);
                     }
                     lastPressed = btn;
-                    priceDisplay.setText(priceLabels[btnIndex.get(btn)[0]][btnIndex.get(btn)[1]].getText());
+                    priceDisplayInt = prices[btnIndex.get(btn)[0]][btnIndex.get(btn)[1]];
+                    String str = "" + (priceDisplayInt / 100.0);
+                    if (str.length() - str.indexOf('.') < 2) {
+                        str += "0";
+                    }
+                    System.out.println(str);
+                    priceDisplay.setText("$" + str);
                 });
                 btnIndex.put(btn, new Integer[] {i, j});
                 btns[i][j] = btn;
@@ -109,7 +116,11 @@ public class CustomerGUI extends Application {
         for (int i = 0; i < priceLabels.length; i++) {
             for (int j = 0; j < priceLabels[0].length; j++) {
                 prices[i][j] = rand.nextInt(400) + 100;
-                Label lbl = new Label(("$" + prices[i][j] / 100.0));
+                String str = "" + prices[i][j] / 100.0;
+                if (str.length() - str.indexOf('.') < 2) {
+                    str += "0";
+                }
+                Label lbl = new Label("$" + str);
                 priceLabels[i][j] = lbl;
                 pane.getChildren().add(priceLabels[i][j]);
             }
@@ -162,13 +173,12 @@ public class CustomerGUI extends Application {
                     btn.setCursor(Cursor.DEFAULT);
                 });
                 btn.setOnMouseClicked(e -> {
-                    int priceNum = (int)(Double.parseDouble(priceDisplay.getText().substring(1)) * 100);
-                    if (priceNum < 0) {
+                    if (priceDisplayInt <= 0) {
                         return;
                     }
                     int btnPrice = (int)(Double.parseDouble(btn.getText()) * 100);
-                    String str = "$" + (priceNum - btnPrice) / 100.0;
-                    System.out.println(priceNum + "\n" + btnPrice + "\n" + (priceNum - btnPrice) / 100.0);
+                    priceDisplayInt -= btnPrice;
+                    String str = "$" + priceDisplayInt / 100.0;
                     int end = Math.min(str.indexOf('.') + 3, str.length());
                     str = str.substring(0, end);
                     if (str.substring(str.indexOf('.')).length() < 3) {
