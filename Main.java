@@ -59,9 +59,57 @@ class Item {
 }
 
 
+//Slot class
+class Slot {
+    private Item head;          //pointer to the first item in the slot
+    private String slot_name;   //name of the item in the slot
+    private double slot_price;       //price of the item in the slot
+    private int item_count;     //number items in the slot
+
+    //constructors
+    Slot() {
+        System.out.println("If you see this, Slot should never not be initialised without a head. head should never be null. head has a default constructor incase there is no useful head.");
+        slot_name = "DEFAULT";
+        slot_price = -1.00;
+        item_count = -1;
+    }
+    Slot(Item head) {
+        this.head = head;
+        slot_name = head.getName();
+        slot_price = head.getPrice();
+        
+        //count how many Items are in the slot
+        int number_of_items = 1;    //slot head is guaranteed to not be null
+        for(Item iterator = head; iterator.getNext() != null; iterator = iterator.getNext()) {
+            number_of_items++;
+        }
+        item_count = number_of_items;
+    }
+
+    //getters and setters
+    Item getSlotHead() { return head; }
+    String getSlotName() { return slot_name; }
+    double getSlotPrice() { return slot_price; }
+    int getSlotItemCount() { return item_count; }
+
+    void setSlotHead(Item head) {
+        this.head = head;
+    }
+    void setSlotName(String slot_name) {
+        this.slot_name = slot_name;
+    }
+    void setSlotPrice(double slot_price) {
+        this.slot_price = slot_price;
+    }
+    void setSlotItemCount(int item_count) {
+        this.item_count = item_count;
+    }
+
+}
+
 //Vending Machine class     
 class VendingMachine {
-    private Item slots[][] = new Item[8][15];   //8 rows, 15 collumns     each slot will have a linked list of Items
+    private Slot slots[][] = new Slot[8][15];   //8 rows, 15 collumns     each slot will have a linked list of Items
     private int current_day;                    //the day that the vending machine is currently on
                                                 //use caution when changing current day as it can have unknown effects
                                                 //on how the data is stored and could cause problems down the line
@@ -69,9 +117,20 @@ class VendingMachine {
     private int temporary_day;                  //NOT KNOWN IF NEEDED YET   maybe use this instead of current_day
                                                 //                          when using dev options
 
+    //PREDEFINED ITEMS  ONLY USE THEM WITH THE RESTOCKER INTERFACE AND MAYBE COORPORATE
+    Item cheetos = new Item("Cheetos", 1.49, current_day);
+    Item doritos = new Item("Doritos", 1.49, current_day);
+    Item sunchips = new Item("Sun Chips", 1.49, current_day);
+    //END OF PREDEFINED ITEMS
+
     //default constructor
     VendingMachine() {
-        //have the vending machine be initialized here using text files or the database
+        //initialize every slot[][] with a slot class
+        for(int row = 0; row < 8; row++) {
+            for(int collumn = 0; collumn < 15; collumn++) {
+                slots[row][collumn] = new Slot();       //Jasmine, initialise each slot class using the database. you will have to recreate the linked list from the database and then do `Slot(head_of_that_linked_list)`
+            }
+        }
     }
 
     //display slots in all the slots of the vending machine in text or in a gui
@@ -84,22 +143,40 @@ class VendingMachine {
 
     //get slot head
     Item getSlotHead(String slot_code) {
+        Slot slot = null;
         Item head = null;   //return variable
         int row = getRowNumber(slot_code);
         int collumn = getCollumnNumber(slot_code);
 
-        head = slots[row][collumn];
+        //bounds checking   if row or collumn is out of bounds, they will always be -1
+        if(row == -1 || collumn == -1) {
+            //out of bounds, return null
+            head = null;
+        }
+        else {
+            slot = slots[row][collumn];
+            head = slot.getSlotHead();
+        }
+        
         return head;
     }
 
     //stack an item into the slot      
-    void stackItem (Item item, String slot_code) {
-        int row = getRowNumber(slot_code);
-        int collumn = getCollumnNumber(slot_code);
-        Item current_head = slots[row][collumn];
-        item.setNext(current_head);
-        current_head.setIsHead(false);
-        item.setIsHead(true);
+    void stackItem (Item item, int row, int collumn) {
+        Slot slot = slots[row][collumn];
+        Item current_head = slot.getSlotHead();
+        
+        //check if the slot was empty to begin with
+        if(current_head == null) {
+            //slot is empty
+            //just make the item to be stacked be the new head
+            slot.setSlotHead(item);
+        }
+        else{
+            item.setNext(current_head);
+            current_head.setIsHead(false);
+            item.setIsHead(true);
+        }
     }
 
     //check if a slot has any stock
@@ -107,9 +184,19 @@ class VendingMachine {
         boolean is_instock = true; //return variable
         int row = getRowNumber(slot_code);  //get row from slot code
         int collumn = getCollumnNumber(slot_code);  //get collumn from slot code
-        if (slots[row][collumn] == null) {
+
+        //bounds checking for row and collumn
+        if(row == -1 || collumn == -1) {
+            //out of bounds
+            System.out.println("That is an invalid location.");
             is_instock = false;
         }
+        else {
+            if (slots[row][collumn].getSlotHead() == null) {
+                is_instock = false;
+            }
+        }
+        
         return is_instock;
     }
 
@@ -139,7 +226,7 @@ class VendingMachine {
             //slot collumn is 2 digits
             String digits = slot_code.substring(length_of_string - 2, length_of_string);   //get the 2 digits of slot code
             //System.out.println(digits);
-            collumn = Integer.parseInt(digits);
+            collumn = Integer.parseInt(digits) - 1;
         }
         else if(length_of_string == 2) {
             char digit = slot_code.charAt(1);
@@ -147,6 +234,12 @@ class VendingMachine {
         }
         else {
             //user did not enter a valid ascii code
+            collumn = -1;
+        }
+
+        //bounds checking to make sure user did not enter something like A20 or B444
+        if(collumn > 14 || collumn < 0) {
+            //out of bounds
             collumn = -1;
         }
 
@@ -171,6 +264,7 @@ public class Main {
                                     //grows by 1 every time the customer orders something
         Scanner user_input = new Scanner(System.in);
 
+        System.out.println(""); //spacer line
 
         //keep asking the customer for item codes until they are ready to check out
         do {
@@ -202,6 +296,7 @@ public class Main {
                 }
                 
             }
+            System.out.println(""); //spacer line
         } while (wants_more);
 
         //customer is ready to pay for what they ordered
@@ -233,6 +328,75 @@ public class Main {
     }
 
 
+    static void devInterface(VendingMachine vending) {
+        Scanner user_input = new Scanner(System.in);
+        int dev_choice = -1;
+        System.out.println(""); //spacer
+
+        do {
+            //dev menu
+            System.out.println("1. Manually add an item to a slot");
+            System.out.println("2. Display vending machine inventory");
+            System.out.println("3. placeholder");
+            System.out.println("4. placeholder");
+            System.out.print("Choose an option [-1 to quit]: ");
+            dev_choice = user_input.nextInt();
+
+            switch(dev_choice) {
+                case 1:
+                    //Manually add an item to a slot
+                    int item_number = -1;
+                    int row = -1;
+                    int collumn = -1;
+                    String slot_code = "A-1";
+                    do {
+                        System.out.println("1. Cheetos");
+                        System.out.println("2. Doritos");
+                        System.out.println("3. Sun Chips");
+                        System.out.println("Enter the number of the item you want to add to the machine [-1 to quit]: ");
+                        item_number = user_input.nextInt();
+                        
+                        
+                        if(item_number != -1) {
+                            System.out.println("Enter a valid slot code [enter A99 if you already quit]: ");
+                            slot_code = user_input.nextLine();
+                            slot_code = user_input.nextLine();  //first nextLine() takes the \n from last input. idk how to flush it out
+                            row = vending.getRowNumber(slot_code);
+                            collumn = vending.getCollumnNumber(slot_code);
+
+
+                            switch(item_number) {
+                                case 1:
+                                    //Cheetos
+                                    vending.stackItem(vending.cheetos, row, collumn);
+                                case 2:
+                                    //Doritos
+                                    vending.stackItem(vending.doritos, row, collumn);
+                                case 3:
+                                    //Sun Chips
+                                    vending.stackItem(vending.sunchips, row, collumn);
+                            }
+                        }
+                    }   while(item_number != -1);
+                    break;
+                case 2:
+                    //display vending machine inventory
+                    vending.displaySlots();
+
+                    break;
+                case 3:
+                    //placeholder
+                    
+                    break;
+                case 4:
+                    //placeholder
+                    
+                    break;
+
+            }
+            System.out.println(""); //spacer
+        } while(dev_choice != -1);
+    }
 
 
 
@@ -252,7 +416,7 @@ public class Main {
             System.out.println("2. Restocker Interface");
             System.out.println("3. Corporate Interface");
             System.out.println("4. Dev options?");
-            System.out.print("Choose an option: ");
+            System.out.print("Choose an option [-1 to quit]: ");
             choice = user_input.nextInt();
 
             switch(choice) {
@@ -266,7 +430,7 @@ public class Main {
                     corporateI(v1);
                 case 4:
                     //dev options
-                    
+                    devInterface(v1);     //dont uncomment. does not work yet
                     break;
             }
 
