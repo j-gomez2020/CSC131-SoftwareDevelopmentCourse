@@ -8,4 +8,9 @@ Jasmin
 
 Sacramento State University Fall 2022 
 
+Purchase Interface: Users are able to purchase a product from our vending machine and recieve accurate change in cash. 
+
+PostgreSQL Database - Supabase 
+
+
 
