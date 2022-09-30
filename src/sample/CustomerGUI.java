@@ -38,6 +38,7 @@ public class CustomerGUI {
         Scene scene = new Scene(pane, xRes, yRes);
         stage.setScene(scene);
         stage.setResizable(false);
+        stage.setTitle("Customer GUI");
         initItems();
         initPriceLabels();
         initPriceDisplay();
@@ -46,6 +47,7 @@ public class CustomerGUI {
         stage.show();
         alignPriceLabels();
         alignCashButtons();
+        initHomeButton();
     }
 
     public void initItems() {
@@ -200,7 +202,21 @@ public class CustomerGUI {
         }
     }
 
-    public void close() {
-        pane.getChildren().clear();
+    public void initHomeButton() {
+        Button home = new Button("Main menu");
+        home.setStyle(btnColor);
+        home.setOnMouseEntered(e -> {
+            home.setStyle(btnColorOnMouseEntered);
+            home.setCursor(Cursor.HAND);
+        });
+        home.setOnMouseExited(e -> {
+            home.setStyle(btnColor);
+        });
+        home.setOnMouseClicked(e -> {
+            stage.close();
+            MainGUI mainGUI = new MainGUI();
+            mainGUI.start();
+        });
+        pane.getChildren().add(home);
     }
 }

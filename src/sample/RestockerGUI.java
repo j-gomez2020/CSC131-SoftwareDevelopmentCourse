@@ -35,6 +35,7 @@ public class RestockerGUI {
         Scene scene = new Scene(pane, xRes, yRes);
         stage.setScene(scene);
         stage.setResizable(false);
+        stage.setTitle("Restocker GUI");
         initItems();
         initItemAmountLabels();
         initHomeButton();
@@ -68,6 +69,9 @@ public class RestockerGUI {
                     String str = temp.getText();
                     str = str.substring(str.indexOf(" ") + 1);
                     int amount = Integer.parseInt(str);
+                    if (!(add || remove)) {
+                        return;
+                    }
                     if (add) {
                         amount++;
                     } else {
@@ -126,7 +130,7 @@ public class RestockerGUI {
         home.setOnMouseClicked(e -> {
             stage.close();
             MainGUI mainGUI = new MainGUI();
-            mainGUI.run();
+            mainGUI.start();
         });
         pane.getChildren().add(home);
     }

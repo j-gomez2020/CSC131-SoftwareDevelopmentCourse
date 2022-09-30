@@ -10,7 +10,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        RestockerGUI g1 = new RestockerGUI();
-        g1.start();
+        MainGUI g = new MainGUI();
+        g.start();
     }
 }
