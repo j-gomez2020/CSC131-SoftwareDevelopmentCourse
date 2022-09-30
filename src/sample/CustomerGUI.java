@@ -1,6 +1,5 @@
 package sample;
 
-import javafx.application.Application;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -12,14 +11,15 @@ import java.util.HashMap;
 import java.util.Random;
 
 
-public class CustomerGUI extends Application {
-    Pane pane;
+public class CustomerGUI {
+    private Pane pane;
+    private Stage stage;
     private static final int xRes = 720;
     private static final int yRes = 1080;
     private static final String backgroundColor = "-fx-background-color: #EFEFEF";
     private static final String btnColor = "-fx-background-color: #D2E5FF";
     private static final String btnColorOnMouseEntered = "-fx-background-color: #EFF6FF";
-    private static final int itemRows = 6;
+    private static final int itemRows = 8;
     private static final int itemColumns = 5;
     private Button[][] btns;
     private Button lastPressed = null;
@@ -30,9 +30,9 @@ public class CustomerGUI extends Application {
     private final HashMap<Button, Integer[]> btnIndex= new HashMap<>();
     private Button[][] cashBtns;
 
-    @Override
-    public void start(Stage stage) {
+    public void start() {
         pane = new Pane();
+        stage = new Stage();
         pane.setStyle(backgroundColor);
 
         Scene scene = new Scene(pane, xRes, yRes);
@@ -46,10 +46,6 @@ public class CustomerGUI extends Application {
         stage.show();
         alignPriceLabels();
         alignCashButtons();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     public void initItems() {
@@ -81,7 +77,6 @@ public class CustomerGUI extends Application {
                     } else {
                         btn.setStyle(btnColor);
                     }
-                    btn.setCursor(Cursor.DEFAULT);
                 });
                 btn.setOnMouseClicked(e -> {
                     if (lastPressed != null) {
@@ -90,10 +85,9 @@ public class CustomerGUI extends Application {
                     lastPressed = btn;
                     priceDisplayInt = prices[btnIndex.get(btn)[0]][btnIndex.get(btn)[1]];
                     String str = "" + (priceDisplayInt / 100.0);
-                    if (str.length() - str.indexOf('.') < 2) {
+                    if (str.length() - str.indexOf('.') <= 2) {
                         str += "0";
                     }
-                    System.out.println(str);
                     priceDisplay.setText("$" + str);
                 });
                 btnIndex.put(btn, new Integer[] {i, j});
@@ -116,7 +110,7 @@ public class CustomerGUI extends Application {
             for (int j = 0; j < priceLabels[0].length; j++) {
                 prices[i][j] = rand.nextInt(400) + 100;
                 String str = "" + prices[i][j] / 100.0;
-                if (str.length() - str.indexOf('.') < 2) {
+                if (str.length() - str.indexOf('.') <= 2) {
                     str += "0";
                 }
                 Label lbl = new Label("$" + str);
@@ -169,7 +163,6 @@ public class CustomerGUI extends Application {
                     } else {
                         btn.setStyle(btnColor);
                     }
-                    btn.setCursor(Cursor.DEFAULT);
                 });
                 btn.setOnMouseClicked(e -> {
                     if (priceDisplayInt <= 0) {
@@ -205,5 +198,9 @@ public class CustomerGUI extends Application {
             double btnYGap = cashBtns[i][0].getHeight() + .1 * cashBtns[i][0].getHeight();
             yLoc += btnYGap;
         }
+    }
+
+    public void close() {
+        pane.getChildren().clear();
     }
 }

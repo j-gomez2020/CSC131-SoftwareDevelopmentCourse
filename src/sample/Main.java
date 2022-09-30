@@ -1,8 +1,16 @@
 package sample;
 
-public class Main {
+import javafx.application.Application;
+import javafx.stage.Stage;
 
+public class Main extends Application {
     public static void main(String[] args) {
-        CustomerGUI.main(args);
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) {
+        RestockerGUI g1 = new RestockerGUI();
+        g1.start();
     }
 }
