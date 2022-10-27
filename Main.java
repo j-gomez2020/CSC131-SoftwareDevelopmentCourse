@@ -1,6 +1,7 @@
 //Main.java
 //main driver of the program
 import java.util.Scanner;
+import java.util.Random;
 
 
 //##############################CLASS DEFINITIONS######################################
@@ -28,6 +29,22 @@ class Item {
         this.price = price;
         this.day_added = day_added;
         is_instock = true;
+    }
+
+    //copy constructor      this takes an Item as input. Class is then initialized with the same data as the Item that was provided
+    Item(Item original) {
+        name = original.getName();
+        price = original.getPrice();
+        day_added = original.getDayAdded();   //HUGE PROBLEM HERE   ORIGINAL MAY NOT HAVE THE CURRENT DAY
+                                            //MAJOR CHANGES MAY NEED TO BE MADE
+                                            //OR WE CAN BE LAZY AND USE A GLOBAL VARIABLE :)
+        is_instock = original.getInStock();
+        next = null;                        //since this is a copy, it shouldnt be pointing to what the original is pointing to
+                                            //original should be pointing to null anyways
+                                            //unless new ideas are brought forth
+        is_head = false;    //leaving this as false because most items added will not be the head
+                            //additional code can check if this really should be true
+
     }
 
     //getters and setters
@@ -89,9 +106,23 @@ class Slot {
       item_count++;
   }
   public void enqueueMult(int n, Item head) {
-	  for(int i = 0; i < n; i++) {
-		  enqueue(head);
-	  }
+        Item copy;
+	    for(int i = 0; i < n; i++) {
+            copy = new Item(head);
+		    enqueue(copy);
+	    }
+        //what should happen if we enqueue 0 items and the array is empty?
+        //enqueue 0 items but make the slot be the name of item as well as the price
+        if(this.tail == 0 && n == 0) {
+            //the array is empty
+            //System.out.printf("\t\tI was triggered. head:%d     n:%d\n", this.head, n);     //debug line
+            slot_name = head.getName();
+            slot_price = head.getPrice();
+        }
+        else {
+            //System.out.printf("\t\thead:%d     n:%d\n", this.head, n);      //debug line
+        }
+        
   }
   
   public Item deque() {
@@ -154,10 +185,15 @@ class VendingMachine {
 
     private double total_revenue;               //keep track of dollar value of sales
 
-  //PREDEFINED ITEMS  ONLY USE THEM WITH THE RESTOCKER INTERFACE AND MAYBE COORPORATE
+    //PREDEFINED ITEMS  ONLY USE THEM WITH THE RESTOCKER INTERFACE AND MAYBE COORPORATE
     Item cheetos = new Item("Cheetos", 1.49, current_day);
     Item doritos = new Item("Doritos", 1.49, current_day);
     Item sunchips = new Item("Sun Chips", 1.49, current_day);
+    Item snickers = new Item("Snickers", 0.99, current_day);
+    Item kitkat = new Item("Kit Kat", 0.99, current_day);
+
+    Item array_of_items [] = {cheetos, doritos, sunchips, snickers, kitkat};    //array holding all the items
+    int SIZE = array_of_items.length;
     //END OF PREDEFINED ITEMS
     
     //default constructor
@@ -172,7 +208,27 @@ class VendingMachine {
     
     //display slots in all the slots of the vending machine in text or in a gui
     void displaySlots() {
-        System.out.println("THIS IS WHERE THE MACHINE INVENTORY WILL BE DISPLAYED");
+        int ascii_code = 65;
+        char ascii_ch;
+        Slot slot;
+        System.out.println("THIS IS WHERE THE MACHINE INVENTORY WILL BE DISPLAYED \nCURRENT SYSTEM FOR DISPLAYING NEEDS SLIGHT MODIFICATIONS");
+        for(int row_index = 0; row_index < 8; row_index++) {
+            ascii_ch = (char)ascii_code;
+            System.out.printf("%c/// ",ascii_ch);
+            for(int collumn_index = 0; collumn_index < 15; collumn_index++) {
+                slot = slots[row_index][collumn_index];
+                
+                System.out.printf("%s|| ", slot.getSlotName());
+                //if(slot.peek() == null) {
+                //    System.out.printf("==EMPTY==||");
+                //}
+                //else {           
+                //    System.out.printf("%s||", slot.getSlotName());
+                //}
+            }
+            System.out.printf("\n");
+            ascii_code++;
+        }
     }
 
     //get current day
@@ -295,7 +351,41 @@ class VendingMachine {
         }
 
         return collumn;
+    }//end of getCollumnNumber()
+
+    //initializer for vending class     may be permanent or temporary depending on how things go
+    //will initialize each Slot of the Vending class to contain 0-5 of an Item. Can also choose to do nothing (not even put 0 of an Item into a slot)
+    void InitVending() {
+        int seed = 0;   //MAKE THIS HAVE THE TIME FOR TRUE RANDOM
+                        //currently set to 0 for debugging
+        Random rand_gen = new Random(seed); //randomize
+        int random_num = -1;
+        Item item_to_be_added;
+        for(int row_index = 0; row_index < 8; row_index++) {
+            for(int collumn_index = 0; collumn_index < 15; collumn_index++) {
+                //choose a random number
+                random_num = rand_gen.nextInt(SIZE+1);      //chooses a random int between 0 and SIZE+3
+                                                            //random_num can be outside array length
+                                                            //purpose is to have some slots have nothing(null)
+                //System.out.printf("num chosen: %d   SIZE: %d\n", random_num, SIZE); //debug line
+                if(random_num < SIZE) {
+                    //random_num is in the array
+                    item_to_be_added = array_of_items[random_num];
+                    random_num = rand_gen.nextInt(5); //chooses 0-5 items to be added
+
+                    //System.out.printf("\t\tAdding %d of %s\n", random_num, item_to_be_added.getName());  //debug line
+                    slots[row_index][collumn_index].enqueueMult(random_num, item_to_be_added);
+                    //System.out.printf("\t\tName of the slot:%s\n", slots[row_index][collumn_index].getSlotName()); //debug line
+                }
+                else {
+                    //System.out.printf("\t\tno item added. Name of the slot:%s\n", slots[row_index][collumn_index].getSlotName()); //debug line
+                }
+
+            }
+        }
     }
+
+
 }
 
 //########################################END OF CLASS DEFINITIONS####################################
@@ -428,7 +518,11 @@ public class Main {
         
     }
     
-
+    static void devOpt(VendingMachine vending) {
+        //for now just immediately call vending.InitVending
+        vending.InitVending();
+        vending.displaySlots();
+    }
 
 
 
@@ -463,7 +557,7 @@ public class Main {
                     corporateI(v1);
                 case 4:
                     //dev options
-                    
+                    devOpt(v1);
                     break;
             }
 
