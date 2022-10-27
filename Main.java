@@ -78,39 +78,39 @@ class Item {
 
 //Slot class
 class Slot {
-  private Item[] a;				//create a fixed array of slots
-  private int head;          //pointer to the first item in the slot
-  private int tail;			//pointer to the last item in slot
-  private String slot_name;   //name of the item in the slot
-  private double slot_price;       //price of the item in the slot
-  private int item_count;     //number items in the slot
+    private Item[] a;				//create a fixed array of slots
+    private int head;          //pointer to the first item in the slot
+    private int tail;			//pointer to the last item in slot
+    private String slot_name;   //name of the item in the slot
+    private double slot_price;       //price of the item in the slot
+    private int item_count;     //number items in the slot
 
-  //constructors
-  Slot() {
-      System.out.println("If you see this, Slot should never not be initialised without a head. head should never be null. head has a default constructor incase there is no useful head.");
-      a = new Item[15];
-      head = 0;
-      tail = 0;
-      slot_name = "DEFAULT";
-      slot_price = -1.00;
-      item_count = 0;
-  }
-  public void enqueue(Item head) {
-	  if(size() == a.length) return;  //no more room in array
-	  if(tail >= a.length)
-		  tail = 0;
-	  a[tail] = head;
-	  tail++;
-      slot_name = head.getName();
-      slot_price = head.getPrice();
-      item_count++;
-  }
-  public void enqueueMult(int n, Item head) {
+    //constructors
+    Slot() {
+        System.out.println("If you see this, Slot should never not be initialised without a head. head should never be null. head has a default constructor incase there is no useful head.");
+        a = new Item[15];
+        head = 0;
+        tail = 0;
+        slot_name = "DEFAULT";
+        slot_price = -1.00;
+        item_count = 0;
+    }
+    public void enqueue(Item head) {
+        if(size() == a.length) return;  //no more room in array
+        if(tail >= a.length)
+            tail = 0;
+        a[tail] = head;
+        tail++;
+        slot_name = head.getName();
+        slot_price = head.getPrice();
+        item_count++;
+    }
+    public void enqueueMult(int n, Item head) {
         Item copy;
-	    for(int i = 0; i < n; i++) {
+        for(int i = 0; i < n; i++) {
             copy = new Item(head);
-		    enqueue(copy);
-	    }
+            enqueue(copy);
+        }
         //what should happen if we enqueue 0 items and the array is empty?
         //enqueue 0 items but make the slot be the name of item as well as the price
         if(this.tail == 0 && n == 0) {
@@ -123,53 +123,53 @@ class Slot {
             //System.out.printf("\t\thead:%d     n:%d\n", this.head, n);      //debug line
         }
         
-  }
-  
-  public Item deque() {
-	  Item ret = a[head];
-	  head++;
-	  item_count--;
-	  if(head >= a.length)
-		  head = 0;
-	  return ret;
-  }
-  
-  public Item peek() {
-	  return a[head];
-  }
-  
-  public boolean isEmpty() {
-	  return size() == 0;
-  }
-  
-  public int size() {
-	  return item_count;
-  }
-  
-  public void clear() {
-	  head = 0;
-	  tail = 0;
-	  item_count = 0;
-  }
+    }
 
-  //getters and setters
-  //Item getSlotHead() { return head; }
-  String getSlotName() { return slot_name; }
-  double getSlotPrice() { return slot_price; }
-  int getSlotItemCount() { return item_count; }
+    public Item deque() {
+        Item ret = a[head];
+        head++;
+        item_count--;
+        if(head >= a.length)
+            head = 0;
+        return ret;
+    }
 
-  /*void setSlotHead(Item head) {
-      this.head = head;
-  } */
-  void setSlotName(String slot_name) {
-      this.slot_name = slot_name;
-  }
-  void setSlotPrice(double slot_price) {
-      this.slot_price = slot_price;
-  }
-  void setSlotItemCount(int item_count) {
-      this.item_count = item_count;
-  }
+    public Item peek() {
+        return a[head];
+    }
+
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    public int size() {
+        return item_count;
+    }
+
+    public void clear() {
+        head = 0;
+        tail = 0;
+        item_count = 0;
+    }
+
+    //getters and setters
+    //Item getSlotHead() { return head; }
+    String getSlotName() { return slot_name; }
+    double getSlotPrice() { return slot_price; }
+    int getSlotItemCount() { return item_count; }
+
+    /*void setSlotHead(Item head) {
+        this.head = head;
+    } */
+    void setSlotName(String slot_name) {
+        this.slot_name = slot_name;
+    }
+    void setSlotPrice(double slot_price) {
+        this.slot_price = slot_price;
+    }
+    void setSlotItemCount(int item_count) {
+        this.item_count = item_count;
+    }
 
 }
 
