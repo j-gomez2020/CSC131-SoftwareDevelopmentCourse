@@ -6,10 +6,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
 import java.util.HashMap;
 import java.util.Random;
-
 
 public class CustomerGUI {
     private final Pane pane;

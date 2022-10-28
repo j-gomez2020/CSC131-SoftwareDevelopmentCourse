@@ -38,7 +38,7 @@ public class Main extends Application {
         stage.show();
 
         startMainGUI();
-        }
+    }
 
         public static void startMainGUI() {
             mainGUI.start();
