@@ -11,38 +11,38 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class RestockerGUI {
-    private Pane pane;
-    private Stage stage;
-    private static final int xRes = 720;
-    private static final int yRes = 1080;
-    private static final String backgroundColor = "-fx-background-color: #EFEFEF";
-    private static final String btnColor = "-fx-background-color: #D2E5FF";
-    private static final String btnColorOnMouseEntered = "-fx-background-color: #EFF6FF";
-    private static final int itemRows = 8;
-    private static final int itemColumns = 5;
+    private final Pane pane;
+    private final Stage stage;
+    private static final int xRes = Main.xRes;
+    private static final int yRes = Main.yRes;
+    private static final String btnColor = Main.btnColor;
+    private static final String btnColorOnMouseEntered = Main.btnColorOnMouseEntered;
+    private static final int itemRows = Main.itemRows;
+    private static final int itemColumns = Main.itemColumns;
     private Button[][] buttons;
     private Button lastPressed;
-    private Button home;
+    private Button home, addBtn, removeBtn;;
     private Label[][] itemAmountLabels;
     private final HashMap<Button, Integer[]> buttonToIndex= new HashMap<>();
     boolean add = false;
     boolean remove = false;
 
-    public void start() {
-        pane = new Pane();
-        stage = new Stage();
-        pane.setStyle(backgroundColor);
-
-        Scene scene = new Scene(pane, xRes, yRes);
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.setTitle("Restocker GUI");
+    public RestockerGUI() {
+        pane = Main.pane;
+        stage = Main.stage;
         initItems();
         initItemAmountLabels();
         initHomeButton();
-        stage.show();
-        alignItemAmountLabels();
         initAddRemoveButtons();
+        hide();
+    }
+
+    public void start() {
+        stage.setTitle("Restocker GUI");
+        relocateItems();
+        relocateItemAmountLabels();
+        relocateHomeButton();
+        relocateAddRemoveButtons();
     }
 
     public void initItems() {
@@ -93,6 +93,28 @@ public class RestockerGUI {
         }
     }
 
+    public void relocateItems() {
+        double btnXRatio = .111;
+        double btnYRatio =.0740;
+        double btnXSize = btnXRatio * xRes;
+        double btnYSize = btnYRatio * yRes;
+
+        double btnLocXRatio = .01;
+        double btnLocYRatio = .0694;
+
+        double yLoc = btnLocYRatio * yRes;
+        for (int i = 0; i < buttons.length; i++) {
+            double xLoc = btnLocXRatio * xRes + .0694 * xRes;
+            for (int j = 0; j < buttons[0].length; j++) {
+                buttons[i][j].relocate(xLoc, yLoc);;
+                double btnXGap = btnXSize + btnXRatio * btnXSize;
+                xLoc += btnXGap;
+            }
+            double btnYGap = btnYSize + .5 * btnYSize;
+            yLoc += btnYGap;
+        }
+    }
+
     public void initItemAmountLabels() {
         itemAmountLabels = new Label[itemRows][itemColumns];
         Random rand = new Random();
@@ -105,7 +127,7 @@ public class RestockerGUI {
             }
         }
     }
-    public void alignItemAmountLabels() {
+    public void relocateItemAmountLabels() {
         for (int i = 0; i < itemAmountLabels.length; i++) {
             for (int j = 0; j < itemAmountLabels[0].length; j++) {
                 itemAmountLabels[i][j].relocate(buttons[i][j].getLayoutX() + buttons[i][j].getPrefWidth() / 2 - itemAmountLabels[i][j].getWidth() / 2,
@@ -129,23 +151,23 @@ public class RestockerGUI {
         home = new Button("Main menu");
         styleButton(home);
         home.setOnMouseClicked(e -> {
-            stage.close();
-            MainGUI mainGUI = new MainGUI();
-            mainGUI.start();
+            hide();
+            Main.startMainGUI();
         });
         pane.getChildren().add(home);
     }
 
     public void initAddRemoveButtons() {
-        Button add = new Button("Add");
-        Button remove = new Button("Remove");
-        styleAddRemoveButtons(add);
-        styleAddRemoveButtons(remove);
-        pane.getChildren().addAll(add, remove);
-        add.setPrefWidth(home.getWidth());
-        add.relocate(home.getWidth() + 50, 0);
-        remove.setPrefWidth(home.getWidth());
-        remove.relocate(add.getLayoutX() + home.getWidth(), 0);
+        addBtn = new Button("Add");
+        removeBtn = new Button("Remove");
+        styleAddRemoveButtons(addBtn);
+        styleAddRemoveButtons(removeBtn);
+        pane.getChildren().addAll(addBtn, removeBtn);
+    }
+
+    public void relocateAddRemoveButtons() {
+        addBtn.relocate(home.getWidth() + 50, 0);
+        removeBtn.relocate(addBtn.getLayoutX() + addBtn.getWidth() + 5.0 / 720 * xRes, 0);
     }
 
     public void styleAddRemoveButtons(Button button) {
@@ -174,5 +196,15 @@ public class RestockerGUI {
                 add = false;
             }
         });
+    }
+
+    public void relocateHomeButton() {
+        home.relocate(0, 0);
+    }
+
+    public void hide() {
+        for (int i = 0; i < pane.getChildren().size(); i++) {
+            pane.getChildren().get(i).relocate(10000, 10000);
+        }
     }
 }

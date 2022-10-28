@@ -1,7 +1,6 @@
 package sample;
 
 import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -13,15 +12,14 @@ import java.util.Random;
 
 
 public class CustomerGUI {
-    private Pane pane;
-    private Stage stage;
-    private static final int xRes = 720;
-    private static final int yRes = 1080;
-    private static final String backgroundColor = "-fx-background-color: #EFEFEF";
-    private static final String btnColor = "-fx-background-color: #D2E5FF";
-    private static final String btnColorOnMouseEntered = "-fx-background-color: #EFF6FF";
-    private static final int itemRows = 8;
-    private static final int itemColumns = 5;
+    private final Pane pane;
+    private final Stage stage;
+    private static final int xRes = Main.xRes;
+    private static final int yRes = Main.yRes;
+    private static final String btnColor = Main.btnColor;
+    private static final String btnColorOnMouseEntered = Main.btnColorOnMouseEntered;
+    private static final int itemRows = Main.itemRows;
+    private static final int itemColumns = Main.itemColumns;
     private Button[][] btns;
     private Button lastPressed = null;
     private int[][] prices;
@@ -30,25 +28,26 @@ public class CustomerGUI {
     private int priceDisplayInt;
     private final HashMap<Button, Integer[]> btnIndex= new HashMap<>();
     private Button[][] cashBtns;
+    private Button home;
 
-    public void start() {
-        pane = new Pane();
-        stage = new Stage();
-        pane.setStyle(backgroundColor);
-
-        Scene scene = new Scene(pane, xRes, yRes);
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.setTitle("Customer GUI");
+    public CustomerGUI () {
+        pane = Main.pane;
+        stage = Main.stage;
         initItems();
         initPriceLabels();
         initPriceDisplay();
         initCashButtons();
-
-        stage.show();
-        alignPriceLabels();
-        alignCashButtons();
         initHomeButton();
+        hide();
+    }
+
+    public void start() {
+        stage.setTitle("Customer GUI");
+        relocateItems();
+        relocatePriceLabels();
+        relocatePriceDisplay();
+        relocateCashButtons();
+        relocateHomeButton();
     }
 
     public void initItems() {
@@ -58,17 +57,12 @@ public class CustomerGUI {
         double btnYSize = btnYRatio * yRes;
 
         btns = new Button[itemRows][itemColumns];
-        double btnLocXRatio = .01;
-        double btnLocYRatio = .0694;
 
-        double yLoc = btnLocYRatio * yRes;
         for (int i = 0; i < btns.length; i++) {
-            double xLoc = btnLocXRatio * xRes + .0694 * xRes;
             for (int j = 0; j < btns[0].length; j++) {
                 int idx = i * btns[0].length + j;
                 Button btn = new Button("" + idx);
                 btn.setPrefSize(btnXSize, btnYSize);
-                btn.relocate(xLoc, yLoc);
                 btn.setStyle(btnColor);
                 btn.setOnMouseEntered(e -> {
                     btn.setStyle(btnColorOnMouseEntered);
@@ -96,6 +90,23 @@ public class CustomerGUI {
                 btnIndex.put(btn, new Integer[] {i, j});
                 btns[i][j] = btn;
                 pane.getChildren().add(btns[i][j]);
+            }
+        }
+    }
+
+    public void relocateItems() {
+        double btnXRatio = .111;
+        double btnYRatio = .0740;
+        double btnXSize = btnXRatio * xRes;
+        double btnYSize = btnYRatio * yRes;
+        double btnLocXRatio = .01;
+        double btnLocYRatio = .0694;
+
+        double yLoc = btnLocYRatio * yRes;
+        for (int i = 0; i < btns.length; i++) {
+            double xLoc = btnLocXRatio * xRes + .0694 * xRes;
+            for (int j = 0; j < btns[0].length; j++) {
+                btns[i][j].relocate(xLoc, yLoc);
                 double btnXGap = btnXSize + btnXRatio * btnXSize;
                 xLoc += btnXGap;
             }
@@ -123,6 +134,10 @@ public class CustomerGUI {
         }
     }
 
+    public void relocatePriceDisplay() {
+        priceDisplay.relocate(.8 * xRes, .25 * yRes);
+    }
+
     public void initPriceDisplay() {
         priceDisplay = new Label("$0.00");
         priceDisplay.setFont(new Font(35));
@@ -130,7 +145,7 @@ public class CustomerGUI {
         pane.getChildren().add(priceDisplay);
     }
 
-    public void alignPriceLabels() {
+    public void relocatePriceLabels() {
         for (int i = 0; i < priceLabels.length; i++) {
             for (int j = 0; j < priceLabels[0].length; j++) {
                 priceLabels[i][j].relocate(btns[i][j].getLayoutX() + btns[i][j].getPrefWidth() / 2 - priceLabels[i][j].getWidth() / 2,
@@ -187,7 +202,7 @@ public class CustomerGUI {
         }
     }
 
-    public void alignCashButtons() {
+    public void relocateCashButtons() {
         double btnXRatio = .05;
 
         double yLoc = priceDisplay.getLayoutY() + priceDisplay.getHeight() + 10.0 / 720 * yRes;
@@ -204,7 +219,7 @@ public class CustomerGUI {
     }
 
     public void initHomeButton() {
-        Button home = new Button("Main menu");
+        home = new Button("Main menu");
         home.setStyle(btnColor);
         home.setOnMouseEntered(e -> {
             home.setStyle(btnColorOnMouseEntered);
@@ -214,10 +229,19 @@ public class CustomerGUI {
             home.setStyle(btnColor);
         });
         home.setOnMouseClicked(e -> {
-            stage.close();
-            MainGUI mainGUI = new MainGUI();
-            mainGUI.start();
+            hide();
+            Main.startMainGUI();
         });
         pane.getChildren().add(home);
+    }
+
+    public void relocateHomeButton() {
+        home.relocate(0, 0);
+    }
+
+    public void hide() {
+        for (int i = 0; i < pane.getChildren().size(); i++) {
+            pane.getChildren().get(i).relocate(10000, 10000);
+        }
     }
 }
