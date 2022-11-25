@@ -84,10 +84,16 @@ class Slot {
     private String slot_name;   //name of the item in the slot
     private double slot_price;       //price of the item in the slot
     private int item_count;     //number items in the slot
+    private boolean restock;		//if this slot needs to be restocked
+    private boolean recall;		//if this slot need to be recalled
+    private int restock_count;	//how many items to add to slot
+    private int recall_count;		//how many items need to be recalled from slot
+    private String restock_name;	//name of new item to be added to slot
+    private double restock_price;		//price of new item to be added
 
-  //constructors
+    //constructor
     Slot() {
-        System.out.println("If you see this, Slot should never not be initialised without a head. head should never be null. head has a default constructor incase there is no useful head.");
+        //System.out.println("If you see this, Slot should never not be initialised without a head. head should never be null. head has a default constructor incase there is no useful head.");
         a = new Item[15];
         head = 0;
         tail = 0;
@@ -95,6 +101,8 @@ class Slot {
         slot_price = -1.00;
         item_count = 0;
     }
+
+    //enqueue one item onto the queue
     public void enqueue(Item head) {
         if(size() == a.length) return;  //no more room in array
         if(tail >= a.length)
@@ -104,7 +112,9 @@ class Slot {
         slot_name = head.getName();
         slot_price = head.getPrice();
         item_count++;
-    }
+    }//end of enqueue()
+
+    //enqueue multiple items onto the queue
     public void enqueueMult(int n, Item head) {
         Item copy;
 	    for(int i = 0; i < n; i++) {
@@ -123,8 +133,9 @@ class Slot {
             //System.out.printf("\t\thead:%d     n:%d\n", this.head, n);      //debug line
         }
         
-    }
+    }//end of enqueueMult()
   
+    //deque one item
     public Item deque() {
         Item ret = a[head];
         head++;
@@ -133,7 +144,22 @@ class Slot {
             head = 0;
         return ret;
     }
-  
+
+    //deque head of the queue
+    public void dequeHead() {
+        head++;
+        item_count--;
+        if(head >= a.length)
+            head = 0;
+    }
+
+    //deque multiple items off the queue
+    public void dequeMult(int n) {
+        for(int i = 0; i < n; i++)
+           dequeHead(); 
+    }
+    
+    //peak at the head item
     public Item peek() {
         return a[head];
     }
@@ -157,10 +183,13 @@ class Slot {
     String getSlotName() { return slot_name; }
     double getSlotPrice() { return slot_price; }
     int getSlotItemCount() { return item_count; }
+    boolean getRestock() { return restock;}
+    boolean getRecall() { return recall;}
+    int getRestockCount() {return restock_count;}
+    int getRecallCount() { return recall_count;}
+    String getRestockName() { return restock_name;}
+    double getRestockPrice() { return restock_price;}
 
-    /*void setSlotHead(Item head) {
-        this.head = head;
-    } */
     void setSlotName(String slot_name) {
         this.slot_name = slot_name;
     }
@@ -170,12 +199,30 @@ class Slot {
     void setSlotItemCount(int item_count) {
         this.item_count = item_count;
     }
+    void setRestock(boolean restock) {
+        this.restock = restock;
+    }
+    void setRecall(boolean recall) {
+        this.recall = recall;
+    }
+    void setRestockCount(int restock_count) {
+        this.restock_count = restock_count;
+    }
+    void setRecallCount(int recall_count) {
+        this.recall_count = recall_count;
+    }
+    void setRestockName(String restock_name) {
+        this.restock_name = restock_name;
+    }
+    void setRestockPrice(double restock_price) {
+        this.restock_price = restock_price;
+    }
 
 }
 
 //Vending Machine class     
 class VendingMachine {
-    private Slot slots[][] = new Slot[8][15];   //8 rows, 15 collumns     each slot will have a linked list of Items
+    private Slot slots[][] = new Slot[10][8];   //8 rows, 15 collumns     each slot will have a linked list of Items
     private int current_day;                    //the day that the vending machine is currently on
                                                 //use caution when changing current day as it can have unknown effects
                                                 //on how the data is stored and could cause problems down the line
@@ -199,11 +246,13 @@ class VendingMachine {
     //default constructor
     VendingMachine() {
         //initialize every slot[][] with a slot class
-        for(int row = 0; row < 8; row++) {
-            for(int collumn = 0; collumn < 15; collumn++) {
+        for(int row = 0; row < 10; row++) {
+            for(int collumn = 0; collumn < 8; collumn++) {
                 slots[row][collumn] = new Slot();       //Jasmine, initialise each slot class using the database. you will have to recreate the linked list from the database and then do `Slot(head_of_that_linked_list)`
             }
         }
+
+        InitVending();
     }
     
     //display slots in all the slots of the vending machine in text or in a gui
@@ -211,14 +260,24 @@ class VendingMachine {
         int ascii_code = 65;
         char ascii_ch;
         Slot slot;
-        System.out.println("THIS IS WHERE THE MACHINE INVENTORY WILL BE DISPLAYED \nCURRENT SYSTEM FOR DISPLAYING NEEDS SLIGHT MODIFICATIONS");
-        for(int row_index = 0; row_index < 8; row_index++) {
+        String output;
+        //System.out.println("THIS IS WHERE THE MACHINE INVENTORY WILL BE DISPLAYED \nCURRENT SYSTEM FOR DISPLAYING NEEDS SLIGHT MODIFICATIONS");
+        
+        //shows the collumn number first before displaying items
+        System.out.printf("----");
+        for(int col_index = 0; col_index < 8; col_index++) {
+            System.out.printf(String.format("%" + 10 + "s", col_index+1));
+            System.out.printf(String.format("%-" + 10 + "s", ""));
+        }
+        System.out.printf("\n");
+
+        for(int row_index = 0; row_index < 10; row_index++) {
             ascii_ch = (char)ascii_code;
             System.out.printf("%c/// ",ascii_ch);
-            for(int collumn_index = 0; collumn_index < 15; collumn_index++) {
+            for(int collumn_index = 0; collumn_index < 8; collumn_index++) {
                 slot = slots[row_index][collumn_index];
-                
-                System.out.printf("%s|| ", slot.getSlotName());
+                output = slot.getSlotName() + " $" + slot.getSlotPrice();
+                System.out.printf(String.format("%-" + 20 + "s", output));
                 //if(slot.peek() == null) {
                 //    System.out.printf("==EMPTY==||");
                 //}
@@ -345,7 +404,7 @@ class VendingMachine {
         }
 
         //bounds checking to make sure user did not enter something like A20 or B444
-        if(collumn > 14 || collumn < 0) {
+        if(collumn > 7 || collumn < 0) {
             //out of bounds
             collumn = -1;
         }
@@ -361,8 +420,8 @@ class VendingMachine {
         Random rand_gen = new Random(seed); //randomize
         int random_num = -1;
         Item item_to_be_added;
-        for(int row_index = 0; row_index < 8; row_index++) {
-            for(int collumn_index = 0; collumn_index < 15; collumn_index++) {
+        for(int row_index = 0; row_index < 10; row_index++) {
+            for(int collumn_index = 0; collumn_index < 8; collumn_index++) {
                 //choose a random number
                 random_num = rand_gen.nextInt(SIZE+1);      //chooses a random int between 0 and SIZE+3
                                                             //random_num can be outside array length
@@ -382,6 +441,38 @@ class VendingMachine {
                 }
 
             }
+        }
+    }//end of InitVending()
+
+    //display slots in all the slots of the vending machine in text or in a gui
+    void displaySlotsDetailed() {
+        int ascii_code = 65;
+        char ascii_ch;
+        Slot slot;
+        String output;
+        //System.out.println("THIS IS WHERE THE MACHINE INVENTORY WILL BE DISPLAYED \nCURRENT SYSTEM FOR DISPLAYING NEEDS SLIGHT MODIFICATIONS");
+        
+        //shows the collumn number first before displaying items
+        System.out.printf("----");
+        for(int col_index = 0; col_index < 8; col_index++) {
+            System.out.printf(String.format("%" + 10 + "s", col_index+1));
+            System.out.printf(String.format("%-" + 10 + "s", ""));
+        }
+        System.out.printf("\n");
+
+        for(int row_index = 0; row_index < 10; row_index++) {
+            ascii_ch = (char)ascii_code;
+            System.out.printf("%c/// ",ascii_ch);
+            for(int collumn_index = 0; collumn_index < 8; collumn_index++) {
+                slot = slots[row_index][collumn_index];
+                //this is what will be printed for every slot
+                output = slot.getSlotName() + " $" + slot.getSlotPrice() + "(" + slot.getSlotItemCount() + ")";   //"Name $price (count in slot)"
+
+                //display the item
+                System.out.printf(String.format("%-" + 20 + "s", output));
+            }
+            System.out.printf("\n");
+            ascii_code++;
         }
     }
 
@@ -412,12 +503,12 @@ public class Main {
         vending.stackItem(vending.sunchips, 2, 0, 7);
 
         //keep asking the customer for item codes until they are ready to check out
-        
+        System.out.println("\n"); //spacer
         do {
         	//checks entire inventory to see if there is no stock in vending machine
             boolean b = false;
-        	for(int i = 65; i < 73; i++) {
-        		for(int j = 1; j < 16; j++) {
+        	for(int i = 65; i < 75; i++) {          //65 = A, 74 = J rows
+        		for(int j = 1; j < 9; j++) {       //1 - 9 collumns
         			String s = "";
         			s = s + (char)i + j;
         			if(vending.inStock(s)) {
@@ -431,7 +522,7 @@ public class Main {
             	break;
             }
             vending.displaySlots(); //display contents of the machine
-            System.out.print("Enter the letter number combo of the item you want [EX: A5][QQ to procede to checkout]: ");
+            System.out.print("\nEnter the letter number combo of the item you want [EX: A5][QQ to procede to checkout]: ");
             slot_location = user_input.nextLine();  //get slot code, QQ to quit and pay
 
             if(slot_location.toUpperCase().equals("QQ")) {
@@ -452,12 +543,14 @@ public class Main {
                     order_list[order_list_index] = slot_location;   //store the slot location
                     order_list_index++; //increment index to the next empty index in order_list
                     bill += vending.getSlotHead(slot_location).getPrice();
+                    wants_more = false;
                 }
                 else {
                     System.out.println("Sorry we're out of stock at that location!");
                 }
                 
             }
+            System.out.println("\n"); //spacer
         } while (wants_more);
 
         //customer is ready to pay for what they ordered
@@ -465,7 +558,7 @@ public class Main {
         //only goes through these steps if the customer placed an order
         if(order_list_index > 0) {
         	//print out all items that the customer has selected
-            System.out.println("These are the items you have selected.");
+            System.out.println("These are the items you have selected:");
             for(int i = 0; i < order_list_index; i++) {
             	System.out.println(vending.getSlotHead(order_list[i]).getName());
             }
@@ -506,22 +599,150 @@ public class Main {
 
 
     static void restockerI(VendingMachine vending) {
+    	Scanner user_input = new Scanner(System.in);
         //tell the restocker to remove expire items
 
         //tell the restocker to remove recalled items
+    	for(int i = 65; i < 73; i++) {
+    		for(int j = 1; j < 16; j++) {
+    			String s = "";
+    			s = s + (char)i + j;
+    			if(vending.getSlot(s).getRecall()) {
+    				System.out.println("Slot " + s + " needs  " + vending.getSlot(s).getRecallCount() + " Items to be recalled");
+    				System.out.print("Recall these items? Type Y for yes and N for no: ");
+    				String answer = user_input.nextLine();
+    				if(answer.toUpperCase().equals("Y")) {
+    					vending.getSlot(s).dequeMult(vending.getSlot(s).getRecallCount());
+    					vending.getSlot(s).setRecall(false);
+    					vending.getSlot(s).setRecallCount(0);
+    				}
+    			}
+    		}
+    	}
+    	
 
         //tell the restocker to add items
-    }
+    	for(int i = 65; i < 73; i++) {
+    		for(int j = 1; j < 16; j++) {
+    			String s = "";
+    			s = s + (char)i + j;
+    			if(vending.getSlot(s).getRestock()) {
+    				System.out.println("Slot " + s + " needs  " + vending.getSlot(s).getRestockCount() + " " + vending.getSlot(s).getRestockName() + " with a price of " + vending.getSlot(s).getRestockPrice());
+    				System.out.print("Restock these items? Type Y for yes and N for no: ");
+    				String answer = user_input.nextLine();
+    				if(answer.toUpperCase().equals("Y")) {
+    					Item temp = new Item(vending.getSlot(s).getRestockName(), vending.getSlot(s).getRestockPrice(), vending.getCurrentDay());
+    					vending.getSlot(s).enqueueMult(vending.getSlot(s).getRestockCount(), temp);
+    					vending.getSlot(s).setRestock(false);
+    					vending.getSlot(s).setRestockCount(0);
+    				}
+    				
+    			}
+    		}
+    	}
+    }   //end of restockerI()
 
 
     static void corporateI(VendingMachine vending) {
+    	int choice = 21;
+        Scanner user_input = new Scanner(System.in);
+        do {
+            //menu
+            System.out.print("Current Day: ");
+            System.out.println(vending.getCurrentDay());
+            System.out.println("1. Check Inventory");
+            System.out.println("2. Suggest Recall");
+            System.out.println("3. Suggest Stock");
+            System.out.println("4. Exit Corporate Interface");
+            System.out.print("Choose an option: ");
+            choice = user_input.nextInt();
+
+            switch(choice) {
+                case 1:
+                    inventory(vending);
+                    break;
+                case 2:
+                    recallMenu(vending);
+                    break;
+                case 3:
+                    stockMenu(vending);
+                case 4:
+                    choice = -1;
+                    
+                    break;
+            }
+
+            System.out.println(""); //blank line for spacing
+        } while(choice != -1);
+    }   //end of corporateI()
+
+    // to show inventory
+    static void inventory(VendingMachine vending) {
         
     }
+
+    //allow corporate to suggest recall 
+    static void recallMenu(VendingMachine vending) {
+    	Scanner user_input = new Scanner(System.in);
+    	boolean more = true;
+    	String slot_location;
+    	int count;
+    	do {
+    		System.out.print("Enter the slot number that you wish to recall or enter QQ to exit: ");
+            slot_location = user_input.nextLine();
+            
+            if(slot_location.toUpperCase().equals("QQ")) {
+                more = false;
+            }
+            else {
+            	System.out.print("How many items do you want to recall?: ");
+                count = user_input.nextInt();
+                user_input.nextLine();
+                vending.getSlot(slot_location).setRecall(true);
+                vending.getSlot(slot_location).setRecallCount(count);
+            }
+    	} while(more);
+    }//end of recallMenu()
+
+    //allow corporate to suggest restock
+    static void stockMenu(VendingMachine vending) {
+    	Scanner user_input = new Scanner(System.in);
+    	boolean more = true;
+    	String slot_location;
+    	int count = 0;
+    	String name;
+    	double price = 0.00 ;
+    	
+    	do {
+    		System.out.print("Enter the slot number that you wish to stock or enter QQ to exit: ");
+            slot_location = user_input.nextLine();
+            
+            if(slot_location.toUpperCase().equals("QQ")) {
+                more = false;
+            }
+            else {
+            	System.out.print("Name of the Item that you want to restock?: ");
+            	name = user_input.nextLine();
+            	System.out.print("What is the price of this Item: ");
+            	price = user_input.nextDouble();
+            	System.out.print("How many items do you want to restock?: ");
+                count = user_input.nextInt();
+                user_input.nextLine();
+                vending.getSlot(slot_location).setRestockName(name);
+                vending.getSlot(slot_location).setRestockPrice(price);
+                vending.getSlot(slot_location).setRestock(true);
+                vending.getSlot(slot_location).setRestockCount(count);
+            }
+    	} while(more);
+ 
+    }
+
+
+
     
     static void devOpt(VendingMachine vending) {
-        //for now just immediately call vending.InitVending
-        vending.InitVending();
-        vending.displaySlots();
+        //display a more detailed inventory
+        vending.displaySlotsDetailed();
     }
 
 
