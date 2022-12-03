@@ -6,9 +6,23 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch JavafxTest/mainstuff",
+            "request": "launch",
+            "mainClass": "JavafxTest/mainstuff",
+            "projectName": "CSC131-SoftwareDevelopmentCourse_e69a9eb9"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "Main.java",
+            "projectName": "CSC131-SoftwareDevelopmentCourse_e69a9eb9"
         }
     ]
 }
