@@ -249,9 +249,7 @@ class VendingMachine {
 
 //########################################END OF CLASS DEFINITIONS####################################
 
-
-
-public class Main {
+class mainstuff {
 
     //methods for interfaces
     static void customerI(VendingMachine vending) {
