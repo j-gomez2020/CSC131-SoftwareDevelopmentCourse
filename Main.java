@@ -553,6 +553,7 @@ public class Main {
             vending.history_count++;
             vending.getSlot(slot_location).deque();
             System.out.println("\n\n"); //spacing
+            customerMoney = 0;
         } while(true);
     }//end of customer interface
 
