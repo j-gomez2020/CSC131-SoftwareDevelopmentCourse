@@ -822,7 +822,7 @@ public class Main {
     static void setCurrentDay(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
     	System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
-    	System.out.print("Enter Y to turn on vending machine, or enter N to turn it off: ");
+    	System.out.print("Enter the day you want the vending machine to be set to: ");
     	int answer = user_input.nextInt();
     	vending.setCurrentDay(answer);
 		System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
