@@ -640,6 +640,7 @@ public class Main {
                     break;
                 case 3:
                     stockMenu(vending);
+                    break;
                 case 4:
                     currentRevenue(vending);
                     break;
