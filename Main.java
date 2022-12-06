@@ -390,6 +390,10 @@ class VendingMachine {
         int letter_ascii = (int) letter;    //get the ascii code of the upper case letter
         row = letter_ascii - 65;    //adjust ascii code to reflect the index of the array
 
+        //bounds checking
+        if(row >= row_length || row < 0) {
+            row = -1;
+        }
         return row;
     }
 
@@ -401,12 +405,7 @@ class VendingMachine {
         int length_of_string = slot_code.length();  //get length of string
 
         //determine if slot collumn is 1 or 2 digits    there are only 8 collumns, but add functionality to easily make it double digits
-        if(length_of_string == 3) {
-            //slot collumn should be 2 digits
-            String digits = slot_code.substring(length_of_string - 2, length_of_string);    //get the 2 digits from slot_code
-            collumn = Integer.parseInt(digits) - 1;
-        }
-        else if(length_of_string == 2) {
+        if(length_of_string == 2) {
             //slot collumn should be 1 digit
             char digit = slot_code.charAt(1);
             collumn = ( (int) digit) - 49;
@@ -465,9 +464,10 @@ public class Main {
         String order_list[] = new String [5];   //FIX ISSUE     same as above
         int order_list_index = 0;   //FIX-ISSUE same as above
 
-        Scanner user_input = new Scanner(System.in);
+        Scanner user_input;
 
         do {
+            user_input = new Scanner(System.in);
             //ask the customer for the item they want
             System.out.println("\n"); //spacer
             
@@ -505,7 +505,7 @@ public class Main {
                 System.out.print("\nEnter the letter number combo of the item you want [EX: A5]: ");
                 slot_location = user_input.nextLine();  //get user input
 
-                if(slot_location.toUpperCase().equals("QQQ")) {
+                if(slot_location.toUpperCase().equals("QQ")) {
                     //return
                     return;
                 }
@@ -517,7 +517,7 @@ public class Main {
                     is_not_valid = false;
                 }
                 else {
-                    System.out.printf("Sorry. We're out of stock at %s\nPlease choose a different item.", slot_location);
+                    System.out.printf("Sorry. We're out of stock at %s\nPlease choose a different item.\n", slot_location);
                 }
             } while(is_not_valid);
             
