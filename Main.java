@@ -21,10 +21,6 @@ class Item {
     private double price;           //how much the item costs       (Ex: 1.25)
     private int day_added;          //the day the item was added    (Ex: 5)     day 5 was the day the item was added
 
-        //unsure if being used
-    private Item next = null;       //points to the next item behind it         //DELETE-PILE           No longer using a linked list
-    private boolean is_instock;     //tells if item is in stock                 //POTENTIAL-DELETE      probably no longer needed   check though
-    private boolean is_head = true; //tells if the item is the head             //POTENTIAL-DELETE      No longer using lined list
     //=============end of private member variable definitions====================
 
     //===============methods and constructors====================================
@@ -170,6 +166,10 @@ class Slot {
 
         head++;
         item_count--;
+        if(item_count == 0) {
+        	slot_name = "EMPTY";
+            slot_price = 0;
+        }
         if(head >= queue.length) {
             head = 0;
         }
@@ -181,6 +181,10 @@ class Slot {
     void dequeHead() {
         head++;
         item_count--;
+        if(item_count == 0) {
+        	slot_name = "EMPTY";
+            slot_price = 0;
+        }
         if(head >= queue.length) {
             head = 0;
         }
@@ -230,7 +234,7 @@ class VendingMachine {
     public int history_count = 0;					//public int for history count
 
         //unsure if being used
-    private double total_revenue;                   //POTENTIAL-DELETE          keeps track of machine total revenue
+    private double total_revenue;                   //keeps track of machine total revenue
 
         //predefined Items
     private Item cheetos = new Item("Cheetos", 1.49, current_day);
@@ -394,6 +398,10 @@ class VendingMachine {
         int letter_ascii = (int) letter;    //get the ascii code of the upper case letter
         row = letter_ascii - 65;    //adjust ascii code to reflect the index of the array
 
+        //bounds checking
+        if(row >= row_length || row < 0) {
+            row = -1;
+        }
         return row;
     }
 
@@ -405,12 +413,7 @@ class VendingMachine {
         int length_of_string = slot_code.length();  //get length of string
 
         //determine if slot collumn is 1 or 2 digits    there are only 8 collumns, but add functionality to easily make it double digits
-        if(length_of_string == 3) {
-            //slot collumn should be 2 digits
-            String digits = slot_code.substring(length_of_string - 2, length_of_string);    //get the 2 digits from slot_code
-            collumn = Integer.parseInt(digits) - 1;
-        }
-        else if(length_of_string == 2) {
+        if(length_of_string == 2) {
             //slot collumn should be 1 digit
             char digit = slot_code.charAt(1);
             collumn = ( (int) digit) - 49;
@@ -432,7 +435,7 @@ class VendingMachine {
         String output;          //output for information on each slot
 
         //label the collumn numbers before displaying the items
-        System.out.printf("----");
+        System.out.printf("\n----");
         for(int col_index = 0; col_index < 8; col_index++) {
             System.out.printf(String.format("%" + 10 + "s", col_index+1));
             System.out.printf(String.format("%-" + 10 + "s", ""));
@@ -469,88 +472,97 @@ public class Main {
         String order_list[] = new String [5];   //FIX ISSUE     same as above
         int order_list_index = 0;   //FIX-ISSUE same as above
 
-        Scanner user_input = new Scanner(System.in);
+        Scanner user_input;
 
-        //ask the customer for the item they want
-        System.out.println("\n"); //spacer
-        
-        //check the status of the vending machine
-        if(!vending.getStatus()) {
-        	System.out.println("This vending machine is currently OUT OF ORDER");
-        	return;
-        }
+        do {
+            user_input = new Scanner(System.in);
+            //ask the customer for the item they want
+            System.out.println("\n"); //spacer
+            
+            //check the status of the vending machine
+            if(!vending.getStatus()) {
+                System.out.println("This vending machine is currently OUT OF ORDER");
+                return;
+            }
 
-        //check if the machine has any stock
-        boolean no_stock = true;   //is the machine out of stock?
-        String s = "";                   //slot code for checking if machine has any stock
-        for(int i = 65; i < 75; i++) {  //65 = A    74 = J  rows
-            for(int j = 1; j < 9; j++) {    //1 - 9 collumns
-                s = "";
-                s = s + (char)i + j;    //create the slot code
-                if(vending.inStock(s)) {
-                    //there is stock
-                    no_stock = false;
-                    break;
+            //check if the machine has any stock
+            boolean no_stock = true;   //is the machine out of stock?
+            String s = "";                   //slot code for checking if machine has any stock
+            for(int i = 65; i < 75; i++) {  //65 = A    74 = J  rows
+                for(int j = 1; j < 9; j++) {    //1 - 9 collumns
+                    s = "";
+                    s = s + (char)i + j;    //create the slot code
+                    if(vending.inStock(s)) {
+                        //there is stock
+                        no_stock = false;
+                        break;
+                    }
                 }
             }
-        }
-        if(no_stock) {
-            System.out.println("OUT OF STOCK");
-            return;
-        }
-
-        //display invent since there is stock
-        vending.displaySlots();
-
-        //ask what item the customer wants
-        boolean is_not_valid = true;
-        do {
-            System.out.print("\nEnter the letter number combo of the item you want [EX: A5]: ");
-            slot_location = user_input.nextLine();  //get user input
-
-            //check if the slot has any stock
-            if(vending.inStock(slot_location)) {
-                //slot has stock
-                bill = vending.getSlotHead(slot_location).getPrice();
-                is_not_valid = false;
+            if(no_stock) {
+                System.out.println("OUT OF STOCK");
+                return;
             }
-            else {
-                System.out.printf("Sorry. We're out of stock at %s\nPlease choose a different item.", slot_location);
+
+            //display invent since there is stock
+            vending.displaySlots();
+
+            //ask what item the customer wants
+            boolean is_not_valid = true;
+            do {
+                System.out.print("\nEnter the letter number combo of the item you want [EX: A5]: ");
+                slot_location = user_input.nextLine();  //get user input
+
+                if(slot_location.toUpperCase().equals("QQ")) {
+                    //return
+                    return;
+                }
+
+                //check if the slot has any stock
+                if(vending.inStock(slot_location)) {
+                    //slot has stock
+                    bill = vending.getSlotHead(slot_location).getPrice();
+                    is_not_valid = false;
+                }
+                else {
+                    System.out.printf("Sorry. We're out of stock at %s\nPlease choose a different item.\n", slot_location);
+                }
+            } while(is_not_valid);
+            
+            //ask the customer to pay
+            double money_entered = 0;
+            System.out.printf("\nBalance: %s\n", String.format("%.2f", (bill)));
+            System.out.println("Please enter the dollar or coin amount (.01, .05, 0.1, .25, 1, 5, 10)");
+
+            do {
+                System.out.print("Enter amount: ");
+                money_entered = user_input.nextDouble();
+
+                //check if correct tender
+                if(money_entered == .01 || money_entered == .05 || money_entered == .1 || money_entered == .25 || money_entered == 1 || money_entered == 5 || money_entered == 10) {
+                    customerMoney += money_entered;
+                }
+                else {
+                    System.out.println("Error, not legal tender. Please enter correct dollar amount (.01, .05, 0.1, .25, 1, 5, 10)");
+                }
+            } while(customerMoney < bill);
+            
+            //give customer their item
+            System.out.printf("%s was dispensed.\n", vending.getSlotHead(slot_location).getName());
+
+            //give customer their change
+            if(customerMoney != bill) {
+                System.out.printf("Change dispensed: " + String.format("%.2f", (customerMoney - bill)));
             }
-        } while(is_not_valid);
-        
-        //ask the customer to pay
-        double money_entered = 0;
-        System.out.printf("\nBalance: %s\n", String.format("%.2f", (bill)));
-        System.out.println("Please enter the dollar or coin amount (.01, .05, 0.1, .25, 1, 5, 10)");
 
-        do {
-            System.out.print("Enter amount: ");
-            money_entered = user_input.nextDouble();
-
-            //check if correct tender
-            if(money_entered == .01 || money_entered == .05 || money_entered == .1 || money_entered == .25 || money_entered == 1 || money_entered == 5 || money_entered == 10) {
-                customerMoney += money_entered;
-            }
-            else {
-                System.out.println("Error, not legal tender. Please enter correct dollar amount (.01, .05, 0.1, .25, 1, 5, 10)");
-            }
-        } while(customerMoney < bill);
-        
-        //give customer their item
-        System.out.printf("%s was dispensed.\n", vending.getSlotHead(slot_location).getName());
-
-        //give customer their change
-        if(customerMoney != bill) {
-            System.out.printf("Change dispensed: " + String.format("%.2f", (customerMoney - bill)));
-        }
-
-        //update total revenue, remove item from slot and update purchase history
-        vending.setTotalRevenue(vending.getTotalRevenue() + bill);
-        vending.history[vending.history_count] = vending.getSlot(slot_location).peek();
-        vending.history_count++;
-        vending.getSlot(slot_location).deque();
-        System.out.println("\n\n"); //spacing
+            //update total revenue, remove item from slot and update purchase history
+            vending.setTotalRevenue(vending.getTotalRevenue() + bill);
+            vending.history[vending.history_count] = vending.getSlot(slot_location).peek();
+            vending.history_count++;
+            vending.getSlot(slot_location).deque();
+            System.out.println("\n\n"); //spacing
+            customerMoney = 0;
+        } while(true);
     }//end of customer interface
 
 
@@ -559,6 +571,7 @@ public class Main {
     	boolean recall = false;
     	boolean restock = false;
     	Scanner user_input = new Scanner(System.in);
+    	System.out.println("\n");
         //tell the restocker to remove expire items
 
         //tell the restocker to remove recalled items
@@ -580,7 +593,7 @@ public class Main {
     		}
     	}
     	if(!recall){
-    		System.out.println("There are no items to recall");
+    		System.out.println("There are no items to recall \n");
     	}
     	
 
@@ -605,7 +618,7 @@ public class Main {
     		}
     	}
     	if(!restock){
-    		System.out.println("There are no items to restock");
+    		System.out.println("There are no items to restock \n");
     	}
     }   //end of restockerI()
 
@@ -616,6 +629,7 @@ public class Main {
         Scanner user_input = new Scanner(System.in);
         do {
             //menu
+        	System.out.println("\n");
             System.out.println("1. Check Inventory");
             System.out.println("2. Suggest Recall");
             System.out.println("3. Suggest Stock");
@@ -626,6 +640,7 @@ public class Main {
             System.out.println("8. Exit Corporate Interface");
             System.out.print("Choose an option: ");
             choice = user_input.nextInt();
+            
 
             switch(choice) {
                 case 1:
@@ -636,6 +651,7 @@ public class Main {
                     break;
                 case 3:
                     stockMenu(vending);
+                    break;
                 case 4:
                     currentRevenue(vending);
                     break;
@@ -668,6 +684,7 @@ public class Main {
     	boolean more = true;
     	String slot_location;
     	int count;
+    	System.out.println("\n");
     	do {
     		System.out.print("Enter the slot number that you wish to recall or enter QQ to exit: ");
             slot_location = user_input.nextLine();
@@ -693,6 +710,7 @@ public class Main {
     	int count = 0;
     	String name;
     	double price = 0.00 ;
+    	System.out.println("\n");
     	
     	do {
     		System.out.print("Enter the slot number that you wish to stock or enter QQ to exit: ");
@@ -718,11 +736,13 @@ public class Main {
     }
     //allow corporate to see current revenue
     static void currentRevenue(VendingMachine vending) {
+    	System.out.println("\n");
     	System.out.println("The current revenue is " + vending.getTotalRevenue() + "\n");
     }
     //allows corporate to see purchae history of the machine
     static void purchaseHistory(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	System.out.println("\n");
     	if(vending.history_count > 0) {
     		System.out.println("List of Purchase History:");
     		for(int i = 0; i < vending.history_count; i++) {
@@ -742,6 +762,7 @@ public class Main {
     }
     //allow corporate to see if vending machine is on and for how long, false means off and true means on
     static void viewStatus(VendingMachine vending) {
+    	System.out.println("\n");
     	if(vending.getStatus()) {
     		System.out.println("This vending machine has been on for " + vending.getCurrentDay() + " days \n");
     	}
@@ -759,7 +780,8 @@ public class Main {
         Scanner user_input = new Scanner(System.in);
         do {
             //menu
-            System.out.print("Current Day: ");
+        	System.out.println("\n");
+            System.out.print("\nCurrent Day: ");
             System.out.println(vending.getCurrentDay());
             System.out.println("1. View Detailed Inventory");
             System.out.println("2. Set Status of Vending Machine");
@@ -795,6 +817,7 @@ public class Main {
     //allows the dev to set the status of the vending machine
     static void setVendingStatus(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	System.out.println("\n");
     	System.out.println("The current status of the vending machine is " + vending.getStatus());
     	System.out.print("Enter Y to turn on vending machine, or enter N to turn it off: ");
     	String answer = user_input.nextLine();
@@ -809,6 +832,7 @@ public class Main {
     //allows the dev to set the location of the vending machine
     static void setVendingLocation(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	System.out.println("\n");
     	System.out.println("The current location of the vending machine is " + vending.getLocation());
     	System.out.print("Enter the zip code location for the vending machine: ");
     	int answer = user_input.nextInt();
@@ -818,8 +842,9 @@ public class Main {
     //allows the dev to set the current day of the vending machine, or how many days have passed since turning the machine on
     static void setCurrentDay(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	System.out.println("\n");
     	System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
-    	System.out.print("Enter Y to turn on vending machine, or enter N to turn it off: ");
+    	System.out.print("Enter the day you want the vending machine to be set to: ");
     	int answer = user_input.nextInt();
     	vending.setCurrentDay(answer);
 		System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
@@ -839,7 +864,7 @@ public class Main {
             System.out.println("1. Customer Interface");
             System.out.println("2. Restocker Interface");
             System.out.println("3. Corporate Interface");
-            System.out.println("4. Dev options?");
+            //System.out.println("4. Dev options?");
             System.out.print("Choose an option: ");
             choice = user_input.nextInt();
 
@@ -852,6 +877,7 @@ public class Main {
                     break;
                 case 3:
                     corporateI(v1);
+                    break;
                 case 4:
                     //dev options
                     devOpt(v1);
