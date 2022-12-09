@@ -536,6 +536,10 @@ public class Main {
 
             do {
                 System.out.print("Enter amount: ");
+                while (!user_input.hasNextDouble()) {
+                	System.out.println("Error, not legal tender. Please enter correct dollar amount (.01, .05, 0.1, .25, 1, 5, 10)");
+                	user_input.next();
+                }
                 money_entered = user_input.nextDouble();
 
                 //check if correct tender
@@ -581,7 +585,7 @@ public class Main {
     			s = s + (char)i + j;
     			if(vending.getSlot(s).getRecall()) {
     				recall = true;
-    				System.out.println("Slot " + s + " needs  " + vending.getSlot(s).getRecallCount() + " Items to be recalled");
+    				System.out.println("Slot " + s + " needs " + vending.getSlot(s).getRecallCount() + " Items to be recalled");
     				System.out.print("Recall these items? Type Y for yes and N for no: ");
     				String answer = user_input.nextLine();
     				if(answer.toUpperCase().equals("Y")) {
@@ -604,7 +608,7 @@ public class Main {
     			s = s + (char)i + j;
     			if(vending.getSlot(s).getRestock()) {
     				restock = true;
-    				System.out.println("Slot " + s + " needs  " + vending.getSlot(s).getRestockCount() + " " + vending.getSlot(s).getRestockName() + " with a price of " + vending.getSlot(s).getRestockPrice());
+    				System.out.println("Slot " + s + " needs " + vending.getSlot(s).getRestockCount() + " " + vending.getSlot(s).getRestockName() + " with a price of " + vending.getSlot(s).getRestockPrice());
     				System.out.print("Restock these items? Type Y for yes and N for no: ");
     				String answer = user_input.nextLine();
     				if(answer.toUpperCase().equals("Y")) {
@@ -638,8 +642,14 @@ public class Main {
             System.out.println("6. View Status");
             System.out.println("7. View Logistics");
             System.out.println("8. Exit Corporate Interface");
-            System.out.print("Choose an option: ");
-            choice = user_input.nextInt();
+            do {
+            	System.out.print("Choose an option: ");
+            	while (!user_input.hasNextInt()) {
+            		System.out.println("Please enter a valid choice");
+            		user_input.next();
+            	}
+            	choice = user_input.nextInt();
+            } while (choice < 1 | choice > 8);
             
 
             switch(choice) {
@@ -693,11 +703,12 @@ public class Main {
                 more = false;
             }
             else {
-            	System.out.print("How many items do you want to recall?: ");
-                count = user_input.nextInt();
-                user_input.nextLine();
-                vending.getSlot(slot_location).setRecall(true);
-                vending.getSlot(slot_location).setRecallCount(count);
+            	System.out.print("Would you like to recall " + vending.getSlot(slot_location).getSlotName() + " from slot " + slot_location + "? Type Y for yes and N for no: ");
+				String answer = user_input.nextLine();
+				if(answer.toUpperCase().equals("Y")) {
+	                vending.getSlot(slot_location).setRecall(true);
+	                vending.getSlot(slot_location).setRecallCount(vending.getSlot(slot_location).getSlotItemCount());
+				}
             }
     	} while(more);
     }//end of recallMenu()
@@ -722,10 +733,23 @@ public class Main {
             else {
             	System.out.print("Name of the Item that you want to restock?: ");
             	name = user_input.nextLine();
-            	System.out.print("What is the price of this Item: ");
-            	price = user_input.nextDouble();
-            	System.out.print("How many items do you want to restock?: ");
-                count = user_input.nextInt();
+            	do {
+            		System.out.print("What is the price of this Item: ");
+            		while (!user_input.hasNextDouble()) {
+            			System.out.println("Please enter a valid price");
+            			user_input.next();
+            		}
+            		price = user_input.nextDouble();
+            		price = Math.round(price*100.0)/100.0;
+            	} while (price < 0);
+            	do {
+            		System.out.print("How many items do you want to restock?: ");
+            		while (!user_input.hasNextInt()) {
+            			System.out.println("Please enter a valid integer between 1 and 15");
+            			user_input.next();
+            		}
+            		count = user_input.nextInt();
+            	} while (count < 1 | count > 15);
                 user_input.nextLine();
                 vending.getSlot(slot_location).setRestockName(name);
                 vending.getSlot(slot_location).setRestockPrice(price);
@@ -788,8 +812,14 @@ public class Main {
             System.out.println("3. Set Location of Vending Machine");
             System.out.println("4. Set Current day of Vending Machine");
             System.out.println("5. Exit Development Interface");
-            System.out.print("Choose an option: ");
-            choice = user_input.nextInt();
+            do {
+            	System.out.print("Choose an option: ");
+            	while (!user_input.hasNextInt()) {
+            		System.out.println("Please enter a valid choice");
+            		user_input.next();
+            	}
+            	choice = user_input.nextInt();
+            } while (choice < 1 | choice > 5);
 
             switch(choice) {
                 case 1:
@@ -832,20 +862,34 @@ public class Main {
     //allows the dev to set the location of the vending machine
     static void setVendingLocation(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	int answer;
     	System.out.println("\n");
     	System.out.println("The current location of the vending machine is " + vending.getLocation());
-    	System.out.print("Enter the zip code location for the vending machine: ");
-    	int answer = user_input.nextInt();
+    	do {
+    		System.out.print("Enter the zip code location for the vending machine: ");
+        	while (!user_input.hasNextInt()) {
+        		System.out.println("Please enter a valid zipcode");
+        		user_input.next();
+        	}
+        	answer = user_input.nextInt();
+        } while (String.valueOf(answer).length() != 5);
 		vending.setLocation(answer);
 		System.out.println("The current location of the vending machine is " + vending.getLocation());
     }
     //allows the dev to set the current day of the vending machine, or how many days have passed since turning the machine on
     static void setCurrentDay(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
+    	int answer;
     	System.out.println("\n");
     	System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
-    	System.out.print("Enter the day you want the vending machine to be set to: ");
-    	int answer = user_input.nextInt();
+    	do {
+    		System.out.print("Enter the day you want the vending machine to be set to: ");
+        	while (!user_input.hasNextInt()) {
+        		System.out.println("Please enter a valid integer");
+        		user_input.next();
+        	}
+        	answer = user_input.nextInt();
+        } while (answer < 0);
     	vending.setCurrentDay(answer);
 		System.out.println("The current day of the vending machine is " + vending.getCurrentDay());
     }
@@ -865,8 +909,15 @@ public class Main {
             System.out.println("2. Restocker Interface");
             System.out.println("3. Corporate Interface");
             //System.out.println("4. Dev options?");
-            System.out.print("Choose an option: ");
-            choice = user_input.nextInt();
+            do {
+            	System.out.print("Choose an option: ");
+            	while (!user_input.hasNextInt()) {
+            		System.out.println("Please enter a valid choice");
+            		user_input.next();
+            	}
+            	choice = user_input.nextInt();
+            } while (choice < 1 | choice > 4);
+            
 
             switch(choice) {
                 case 1:
