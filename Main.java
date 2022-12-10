@@ -370,6 +370,11 @@ class VendingMachine {
         //check if a slot has any stock
     boolean inStock(String slot_code) {
         boolean is_instock = true;  //return variable
+        if(slot_code.length() == 0) {
+        	System.out.println("That is an invalid location.");
+        	is_instock = false;
+        	return is_instock;
+        }
         int row = getRowNumber(slot_code); //get row from slot code
         int collumn = getCollumnNumber(slot_code); //get collumn from slot code
 
@@ -387,6 +392,24 @@ class VendingMachine {
 
         return is_instock;
     }//end of inStock()
+    
+    boolean isValid(String slot_code) {
+        boolean is_valid = true;  //return variable
+        if(slot_code.length() == 0) {
+        	is_valid = false;
+        	return is_valid;
+        }
+        int row = getRowNumber(slot_code); //get row from slot code
+        int collumn = getCollumnNumber(slot_code); //get collumn from slot code
+
+        //bounds checking for row and collumn
+        if(row == -1 || collumn == -1) {
+            //out of bounds
+            is_valid = false;
+        }
+
+        return is_valid;
+    }//end of isValid()
 
         //get a row number from a slot code
     int getRowNumber(String slot_code) {
@@ -579,7 +602,7 @@ public class Main {
         //tell the restocker to remove expire items
 
         //tell the restocker to remove recalled items
-    	for(int i = 65; i < 73; i++) {
+    	for(int i = 65; i < 75; i++) {
     		for(int j = 1; j < 9; j++) {
     			String s = "";
     			s = s + (char)i + j;
@@ -602,7 +625,7 @@ public class Main {
     	
 
         //tell the restocker to add items
-    	for(int i = 65; i < 73; i++) {
+    	for(int i = 65; i < 75; i++) {
     		for(int j = 1; j < 9; j++) {
     			String s = "";
     			s = s + (char)i + j;
@@ -691,72 +714,92 @@ public class Main {
     //allow corporate to suggest recall 
     static void recallMenu(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
-    	boolean more = true;
-    	String slot_location;
-    	int count;
+    	String slot_location = "";
     	System.out.println("\n");
+    	boolean is_not_valid = true;
     	do {
-    		System.out.print("Enter the slot number that you wish to recall or enter QQ to exit: ");
-            slot_location = user_input.nextLine();
-            
-            if(slot_location.toUpperCase().equals("QQ")) {
-                more = false;
-            }
-            else {
-            	System.out.print("Would you like to recall " + vending.getSlot(slot_location).getSlotName() + " from slot " + slot_location + "? Type Y for yes and N for no: ");
-				String answer = user_input.nextLine();
-				if(answer.toUpperCase().equals("Y")) {
-	                vending.getSlot(slot_location).setRecall(true);
-	                vending.getSlot(slot_location).setRecallCount(vending.getSlot(slot_location).getSlotItemCount());
-				}
-            }
-    	} while(more);
+    		do {
+        		System.out.print("\nEnter the slot number that you want to recall or enter QQ to exit: ");
+        		slot_location = user_input.nextLine();
+        		
+        		if(slot_location.toUpperCase().equals("QQ")) {
+        			return;
+        		}
+        		
+        		if(vending.isValid(slot_location)) {
+        			is_not_valid = false;
+        		}
+        		else {
+        			System.out.println("That is not a valid slot code");
+        		}
+        	} while(is_not_valid);
+        	
+        	System.out.print("Would you like to recall " + vending.getSlot(slot_location).getSlotName() + " from slot " + slot_location + "? Type Y for yes and N for no: ");
+    		String answer = user_input.nextLine();
+    		if(answer.toUpperCase().equals("Y")) {
+    			vending.getSlot(slot_location).setRecall(true);
+                vending.getSlot(slot_location).setRecallCount(vending.getSlot(slot_location).getSlotItemCount());
+    		}
+    	} while(true);	
     }//end of recallMenu()
 
     //allow corporate to suggest restock
     static void stockMenu(VendingMachine vending) {
     	Scanner user_input = new Scanner(System.in);
-    	boolean more = true;
     	String slot_location;
     	int count = 0;
     	String name;
     	double price = 0.00 ;
     	System.out.println("\n");
     	
+    	boolean is_not_valid = true;
     	do {
-    		System.out.print("Enter the slot number that you wish to stock or enter QQ to exit: ");
-            slot_location = user_input.nextLine();
+    		do {
+        		System.out.print("\nEnter the slot number that you want to recall or enter QQ to exit: ");
+        		slot_location = user_input.nextLine();
+        		
+        		if(slot_location.toUpperCase().equals("QQ")) {
+        			return;
+        		}
+        		
+        		if(vending.isValid(slot_location)) {
+        			is_not_valid = false;
+        		}
+        		else {
+        			System.out.println("That is not a valid slot code");
+        		}
+        	} while(is_not_valid);
+        	
+    		System.out.print("Name of the Item that you want to restock?: ");
+        	name = user_input.nextLine();
+        	do {
+        		System.out.print("What is the price of this Item: ");
+        		while (!user_input.hasNextDouble()) {
+        			System.out.println("Please enter a valid price");
+        			user_input.next();
+        		}
+        		price = user_input.nextDouble();
+        		price = Math.round(price*100.0)/100.0;
+        	} while (price < 0);
+        	do {
+        		System.out.print("How many items do you want to restock?: ");
+        		while (!user_input.hasNextInt()) {
+        			System.out.println("Please enter a valid integer between 1 and 15");
+        			user_input.next();
+        		}
+        		count = user_input.nextInt();
+        	} while (count < 1 | count > 15);
+            user_input.nextLine();
             
-            if(slot_location.toUpperCase().equals("QQ")) {
-                more = false;
-            }
-            else {
-            	System.out.print("Name of the Item that you want to restock?: ");
-            	name = user_input.nextLine();
-            	do {
-            		System.out.print("What is the price of this Item: ");
-            		while (!user_input.hasNextDouble()) {
-            			System.out.println("Please enter a valid price");
-            			user_input.next();
-            		}
-            		price = user_input.nextDouble();
-            		price = Math.round(price*100.0)/100.0;
-            	} while (price < 0);
-            	do {
-            		System.out.print("How many items do you want to restock?: ");
-            		while (!user_input.hasNextInt()) {
-            			System.out.println("Please enter a valid integer between 1 and 15");
-            			user_input.next();
-            		}
-            		count = user_input.nextInt();
-            	} while (count < 1 | count > 15);
-                user_input.nextLine();
-                vending.getSlot(slot_location).setRestockName(name);
+            System.out.print("Would you like to stock slot " + slot_location + " with " + count + " " + name + " with a price of $" + price + " ? Type Y for yes and N for no: ");
+    		String answer = user_input.nextLine();
+    		if(answer.toUpperCase().equals("Y")) {
+    			vending.getSlot(slot_location).setRestockName(name);
                 vending.getSlot(slot_location).setRestockPrice(price);
                 vending.getSlot(slot_location).setRestock(true);
                 vending.getSlot(slot_location).setRestockCount(count);
-            }
-    	} while(more);
+    		}
+    	} while(true);
     }
     //allow corporate to see current revenue
     static void currentRevenue(VendingMachine vending) {
